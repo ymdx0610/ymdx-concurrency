@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>concurrency01-thread-basis</module>
+        <module>concurrency02-jmm</module>
     </modules>
 
     <properties>
