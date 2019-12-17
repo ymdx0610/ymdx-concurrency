@@ -96,7 +96,7 @@
 |getName()|获取当前线程名称|
 |sleep(long mill)|休眠线程|
 |stop()|停止线程|
-|Thread|分配一个新的Thread对象|
+|Thread()|分配一个新的Thread对象|
 |Thread(String name)|分配一个新的Thread对象，具有指定的name。|
 |Thread(Runable r)|分配一个新的Thread对象|
 |Thread(Runable r, String name)|分配一个新的Thread对象|
