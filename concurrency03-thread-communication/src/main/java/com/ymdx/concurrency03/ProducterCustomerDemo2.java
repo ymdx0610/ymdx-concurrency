@@ -91,8 +91,8 @@ class Producter2 implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            user.lock.lock();
             try {
-                user.lock.lock();
                 if (user.flag) {
                     // flag = true，可以读，但不可以写
                     // 释放当前监视器锁，让出CPU执行权
@@ -138,8 +138,8 @@ class Customer2 implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            user.lock.lock();
             try{
-                user.lock.lock();
                 if(!user.flag){
                     // flag = false：可以写，但是不可以读
                     user.condition.await();

@@ -540,6 +540,47 @@ res.condition.signal(); // 类似notify
 ## 线程池原理分析  
 > 示例项目：concurrency04-thread-pool  
 
+### 并发包
+
+#### CountDownLatch（计数器）
+CountDownLatch 类位于java.util.concurrent包下，利用它可以实现类似计数器的功能。  
+比如有一个任务A，它要等待其他2个任务执行完毕之后才能执行，此时就可以利用CountDownLatch来实现这种功能了。  
+CountDownLatch是通过一个计数器来实现的，计数器的初始值为线程的数量。每当一个线程完成了自己的任务后，计数器的值就会减1。  
+当计数器值到达0时，它表示所有的线程已经完成了任务，然后在闭锁上等待的线程就可以恢复执行任务。  
+
+> 示例代码：concurrency04-thread-pool.CountDownLatchDemo.java
+
+#### CyclicBarrier（屏障）
+
+CyclicBarrier初始化时规定一个数目，然后计算调用了CyclicBarrier.await()进入等待的线程数。当线程数达到了这个数目时，所有进入等待状态的线程被唤醒并继续。  
+CyclicBarrier就象它名字的意思一样，可看成是个障碍， 所有的线程必须到齐后才能一起通过这个障碍。   
+CyclicBarrier初始时还可带一个Runnable的参数， 此Runnable任务在CyclicBarrier的数目达到后，所有其它线程被唤醒前被执行。  
+
+> 示例代码：concurrency04-thread-pool.CyclicBarrierDemo.java
+
+#### Semaphore（计数信号量）
+Semaphore是一种基于计数的信号量。它可以设定一个阈值，基于此，多个线程竞争获取许可信号，做自己的申请后归还，超过阈值后，线程申请许可信号将会被阻塞。  
+Semaphore可以用来构建一些对象池，资源池之类的，比如数据库连接池，我们也可以创建计数为1的Semaphore，将其作为一种类似互斥锁的机制，这也叫二元信号量，表示两种互斥状态。它的用法如下：  
+```java
+semaphore.availablePermits(); // 获取当前可用的资源数量    
+semaphore.acquire();          // 申请资源    
+semaphore.release();          // 释放资源   
+```
+
+> 示例代码：concurrency04-thread-pool.CyclicBarrierDemo.java    
+ 
+
+
+
+
+
+
+  
+
+
+
+
+
 
 
 
