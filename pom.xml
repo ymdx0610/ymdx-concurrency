@@ -11,6 +11,7 @@
     <modules>
         <module>concurrency01-thread-basis</module>
         <module>concurrency02-jmm</module>
+        <module>concurrency03-thread-communication</module>
     </modules>
 
     <properties>
