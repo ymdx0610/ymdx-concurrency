@@ -505,7 +505,7 @@ flag变量是个标记，用来标识变量a是否已被写入。这里假设有
 ### lock锁
 在 jdk1.5 之后，并发包中新增了 Lock 接口和相关实现类，用来实现锁功能，Lock 接口提供了与 synchronized 关键字类似的同步功能，但需要在使用时手动获取锁和释放锁。  
 
-> 示例代码：concurrency03-thread-communication.
+> 示例代码：concurrency03-thread-communication.ProducterCustomerDemo2.java
 
 #### lock用法  
 ```java
@@ -539,6 +539,7 @@ res.condition.signal(); // 类似notify
 
 ## 线程池原理分析  
 > 示例项目：concurrency04-thread-pool  
+
 
 
 
