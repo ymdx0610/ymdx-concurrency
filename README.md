@@ -482,8 +482,79 @@ flag变量是个标记，用来标识变量a是否已被写入。这里假设有
 
 <hr>
 
-## 三、多线程间通讯  
+## 三、多线程之间通讯  
 > 示例项目：concurrency03-thread-communication
+
+### 什么是多线程之间通讯？  
+多线程之间通讯，其实就是多个线程在操作同一个资源，但是操作的动作不同。  
+
+### 生产者与消费者  
+> 示例代码：concurrency03-thread-communication.ProducterCustomerDemo.java
+
+### wait、notify方法  
+1. 因为涉及到对象锁，wait、notify必须都放在synchronized中来使用，持有同一把锁；   
+2. wait必须暂定当前正在执行的线程，并释放资源锁，让其他线程可以有机会运行；  
+3. notify/notifyall：唤醒因锁池中的线程，使之运行。  
+注意：一定要在线程同步中使用，并且是同一个锁的资源！  
+
+### wait与sleep区别  
+1. 对于sleep()方法，首先要知道该方法是属于Thread类中的，而wait()方法则是属于Object类中的。  
+2. sleep()方法导致程序暂停执行指定的时间，让出cpu时间片给其他线程，但是他的监控状态依然保持者，当指定的时间到了又会自动恢复运行状态。在调用sleep()方法的过程中，线程不会释放对象锁。  
+3. 当调用wait()方法的时候，线程会放弃对象锁，进入等待此对象的等待锁定池，只有针对此对象调用notify()方法后本线程才进入对象锁定池准备获取对象锁进入运行状态。  
+
+### lock锁
+在 jdk1.5 之后，并发包中新增了 Lock 接口和相关实现类，用来实现锁功能，Lock 接口提供了与 synchronized 关键字类似的同步功能，但需要在使用时手动获取锁和释放锁。  
+
+> 示例代码：concurrency03-thread-communication.
+
+#### lock用法  
+```java
+Lock lock = new ReentrantLock();
+lock.lock();
+try{
+    // 可能会出现线程安全的操作
+}finally{
+    // 一定在finally中释放锁
+    // 也不能把获取锁在try中进行，因为有可能在获取锁的时候抛出异常
+    lock.unlock();
+}
+```
+
+#### Lock与synchronized关键字的区别  
+Lock接口可以尝试非阻塞地获取锁。当前线程尝试获取锁，如果这一时刻锁没有被其他线程获取到，则成功获取并持有锁。  
+Lock接口能被中断地获取锁。 与 synchronized 不同，获取到锁的线程能够响应中断，当获取到的锁的线程被中断时，中断异常将会被抛出，同时锁会被释放。  
+Lock接口在指定的截止时间之前获取锁，如果截止时间到了依旧无法获取锁，则返回。  
+
+#### condition用法
+condition的功能类似于在传统的线程技术中，Object.wait()和Object.notify()的功能。  
+
+```java
+Lock lock = new ReentrantLock();
+Condition condition = lock.newCondition();
+res.condition.await();  // 类似wait
+res.condition.signal(); // 类似notify
+```
+
+<hr>
+
+## 线程池原理分析  
+> 示例项目：concurrency04-thread-pool  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

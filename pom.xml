@@ -12,6 +12,7 @@
         <module>concurrency01-thread-basis</module>
         <module>concurrency02-jmm</module>
         <module>concurrency03-thread-communication</module>
+        <module>concurrency04-thread-pool</module>
     </modules>
 
     <properties>
