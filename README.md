@@ -613,7 +613,8 @@ poll()和peek()：都是取头元素节点，区别在于前者会删除元素�
 BlockingQueue即阻塞队列，从阻塞这个词可以看出，在某些情况下对阻塞队列的访问可能会造成阻塞。被阻塞的情况主要有如下两种：  
 1. 当队列满了的时候进行入队列操作  
 2. 当队列空了的时候进行出队列操作  
-因此，当一个线程试图对一个已经满了的队列进行入队列操作时，它将会被阻塞，除非有另一个线程做了出队列操作；  
+
+因此，当一个线程试图对一个已经满了的队列进行入队列操作时，它将会被阻塞，除非有另一个线程做了出队列操作；   
 同样，当一个线程试图对一个空队列进行出队列操作时，它将会被阻塞，除非有另一个线程进行了入队列操作。  
 
 在Java中，BlockingQueue的接口位于java.util.concurrent包中（在Java5版本开始提供），由上面介绍的阻塞队列的特性可知，阻塞队列是线程安全的。  
@@ -657,6 +658,59 @@ SynchronousQueue队列内部仅允许容纳一个元素。当一个线程插入�
 
 
 ### 线程池
+
+#### 什么是线程池  
+Java中的线程池是运用场景最多的并发框架，几乎所有需要异步或并发执行任务的程序都可以使用线程池。在开发过程中，合理地使用线程池能够带来3个好处：  
+1. 降低资源消耗。通过重复利用已创建的线程降低线程创建和销毁造成的消耗。  
+2. 提高响应速度。当任务到达时，任务可以不需要等到线程创建就能立即执行。  
+3. 提高线程的可管理性。线程是稀缺资源，如果无限制地创建，不仅会消耗系统资源，还会降低系统的稳定性，使用线程池可以进行统一分配、调优和监控，但是要做到合理利用。  
+
+#### 线程池作用
+线程池是为突然大量爆发的线程设计的，通过有限的几个固定线程为大量的操作服务，减少了创建和销毁线程所需的时间，从而提高效率。  
+如果一个线程的时间非常长，就没必要用线程池了（不是不能作长时间操作，而是不宜），况且我们还不能控制线程池中线程的开始、挂起和中止。  
+
+#### 线程池的分类
+
+#### ThreadPoolExecutor
+Java是天生就支持并发的语言，支持并发意味着多线程，线程的频繁创建在高并发及大数据量是非常消耗资源的，因此java提供了线程池。    
+在JDK1.5以前的版本中，线程池的使用是及其简陋的，但是在JDK1.5后，有了很大的改善。    
+JDK1.5之后加入了java.util.concurrent包，java.util.concurrent包的加入给予开发人员开发并发程序以及解决并发问题很大的帮助。    
+并发包下的Executor接口虽然作为一个非常旧的接口（JDK1.5 2004年发布），但是很多程序员对于其中的一些原理还是不熟悉。  
+Executor框架的最顶层实现是ThreadPoolExecutor类，  
+Executors工厂类中提供的newScheduledThreadPool、newFixedThreadPool、newCachedThreadPool方法其实也只是ThreadPoolExecutor的构造函数参数不同而已。  
+通过传入不同的参数，就可以构造出适用于不同应用场景下的线程池。
+
+```text
+// 构造方法
+public ThreadPoolExecutor(int corePoolSize,
+                          int maximumPoolSize,
+                          long keepAliveTime,
+                          TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue,
+                          ThreadFactory threadFactory,
+                          RejectedExecutionHandler handler)
+                          
+// 参数
+corePoolSize - 即使空闲时仍保留在池中的线程数，除非设置allowCoreThreadTimeOut
+maximumPoolSize - 池中允许的最大线程数
+keepAliveTime - 当线程数大于内核时，这是多余的空闲线程在终止前等待新任务的最大时间。
+unit - keepAliveTime参数的时间单位，有7种静态属性。
+workQueue - 用于在执行任务之前使用的队列。这个队列将仅保存execute方法提交的Runnable任务。
+threadFactory - 执行程序创建新线程时使用的工厂
+handler - 执行被阻止时使用的处理程序，因为达到线程限制和队列容量
+异常
+IllegalArgumentException - 如果以下某项成立： 
+corePoolSize < 0 
+keepAliveTime < 0 
+maximumPoolSize <= 0 
+maximumPoolSize < corePoolSize
+NullPointerException - 如果 workQueue 或threadFactory 或handler 为空
+```
+RejectedExecutionHandler提供了四个预定义的处理程序策略：  
+1. 在默认ThreadPoolExecutor.AbortPolicy ，处理程序会引发运行RejectedExecutionException后排斥反应。  
+2. 在ThreadPoolExecutor.CallerRunsPolicy中，调用execute本身的线程运行任务。 这提供了一个简单的反馈控制机制，将降低新任务提交的速度。  
+3. 在ThreadPoolExecutor.DiscardPolicy中 ，简单地删除无法执行的任务。  
+4. 在ThreadPoolExecutor.DiscardOldestPolicy中 ，如果执行程序没有关闭，则工作队列头部的任务被删除，然后重试执行（可能会再次失败，导致重复）。  
 
 
 
