@@ -107,7 +107,7 @@ class Producter2 implements Runnable {
                     user.setSex("女");
                 }
                 user.flag = true;
-                // 唤醒等待的线程（随机的其中一个）
+                // 唤醒等待队列中等待时间最长的线程（队头）
                 user.condition.signal();
             }catch (Exception e){
                 e.printStackTrace();

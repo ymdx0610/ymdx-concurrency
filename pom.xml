@@ -13,6 +13,7 @@
         <module>concurrency02-jmm</module>
         <module>concurrency03-thread-communication</module>
         <module>concurrency04-thread-pool</module>
+        <module>concurrency05-lock</module>
     </modules>
 
     <properties>
