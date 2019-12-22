@@ -833,7 +833,7 @@ public interface Callable<V> {
 - V get() ：获取异步执行的结果，如果没有结果可用，此方法会阻塞直到异步计算完成。  
 - V get(Long timeout , TimeUnit unit) ：获取异步执行结果，如果没有结果可用，此方法会阻塞，但是会有时间限制，如果阻塞时间超过设定的timeout时间，该方法将抛出异常。  
 - boolean isDone() ：如果任务执行结束，无论是正常结束或是中途取消还是发生异常，都返回true。  
-- boolean isCanceller() ：如果任务完成前被取消，则返回true。  
+- boolean isCancelled() ：如果任务完成前被取消，则返回true。  
 - boolean cancel(boolean mayInterruptRunning) ：  
 如果任务还没开始，执行cancel(...)方法将返回false；  
 如果任务已经启动，执行cancel(true)方法将以中断执行此任务线程的方式来试图停止任务，如果停止成功，返回true；  
