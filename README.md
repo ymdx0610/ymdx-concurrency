@@ -707,12 +707,14 @@ NullPointerException - 如果 workQueue 或threadFactory 或handler 为空
 ```
 RejectedExecutionHandler提供了四个预定义的处理程序策略：  
 1. 在默认ThreadPoolExecutor.AbortPolicy ，处理程序会引发运行RejectedExecutionException后排斥反应。  
-2. 在ThreadPoolExecutor.CallerRunsPolicy中，调用execute本身的线程运行任务。 这提供了一个简单的反馈控制机制，将降低新任务提交的速度。  
+2. 在ThreadPoolExecutor.CallerRunsPolicy中，调用execute本身的线程运行任务。这提供了一个简单的反馈控制机制，将降低新任务提交的速度。  
 3. 在ThreadPoolExecutor.DiscardPolicy中 ，简单地删除无法执行的任务。  
 4. 在ThreadPoolExecutor.DiscardOldestPolicy中 ，如果执行程序没有关闭，则工作队列头部的任务被删除，然后重试执行（可能会再次失败，导致重复）。 
 
 
-#### 线程池四种创建方式  
+#### 线程池四种创建方式
+> 示例代码：concurrency04-thread-pool.ThreadPoolDemo.java
+  
 Java通过Executors（jdk1.5并发包）提供四种线程池，分别为：  
 - newCachedThreadPool：创建一个可缓存线程池，如果线程池长度超过处理需要，可灵活回收空闲线程，若无可回收，则新建线程。  
 ```java
@@ -756,6 +758,20 @@ public static ExecutorService newSingleThreadExecutor() {
 }
 ``` 
 > 从代码中也能看得出来，corePoolSize和maximumPoolSize都是1，keepAliveTime是0L, 传入的队列是无界队列。线程池中永远只有一个线程在工作。  
+
+#### 线程池原理剖析
+
+提交一个任务到线程池中，线程池的处理流程如下：
+1. 判断线程池里的核心线程是否都在执行任务，如果不是（核心线程空闲或者还有核心线程没有被创建）则创建一个新的工作线程来执行任务。如果核心线程都在执行任务，则进入下个流程。  
+2. 线程池判断工作队列是否已满，如果工作队列没有满，则将新提交的任务存储在这个工作队列里。如果工作队列满了，则进入下个流程。  
+3. 判断线程池里的线程是否都处于工作状态，如果没有，则创建一个新的工作线程来执行任务。如果已经满了，则交给饱和策略来处理这个任务。  
+
+![](images/线程池原理图.png)  
+
+#### 自定义线程池
+
+> 示例代码 concurrency04-thread-pool.CustomThreadPoolDemo.java
+
 
 
 
