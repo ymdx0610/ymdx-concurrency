@@ -14,6 +14,7 @@
         <module>concurrency03-thread-communication</module>
         <module>concurrency04-thread-pool</module>
         <module>concurrency05-lock</module>
+        <module>concurrency06-disruptor</module>
     </modules>
 
     <properties>
