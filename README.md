@@ -897,54 +897,141 @@ update table set x=x+1, version=version+1 where id=#{id} and version=#{version};
 - CAS操作方式：即compare and swap 或者 compare and set，涉及到三个操作数，数据所在的内存值，预期值，新值。  
 当需要更新时，判断当前内存值与之前取到的值是否相等，若相等，则用新值更新，若失败则重试，一般情况下是一个自旋操作，即不断的重试。  
 
-#### 自旋锁
-自旋锁是采用让当前线程不停地的在循环体内执行实现的，当循环的条件被其他线程改变时才能进入临界区。  
+### 自旋锁
+自旋锁是采用让当前线程不停地的在循环体内执行实现的，当循环的条件被其他线程改变时才能进入临界区。如下：  
+```java
+private AtomicReference<Thread> sign =new AtomicReference<>();
+public void lock() {
+    Thread current = Thread.currentThread();
+    while (!sign.compareAndSet(null, current)) {
+    }
+}
+public void unlock() {
+    Thread current = Thread.currentThread();
+    sign.compareAndSet(current, null);
+}
+```
+> 示例代码：  
 
 当一个线程调用这个不可重入的自旋锁去加锁的时候没问题，当再次调用lock()的时候，因为自旋锁的持有引用已经不为空了，该线程对象会误认为是别人的线程持有了自旋锁。  
 使用了CAS原子操作，lock函数将owner设置为当前线程，并且预测原来的值为空。unlock函数将owner设置为null，并且预测值为当前线程。  
 当有第二个线程调用lock操作时由于owner值不为空，导致循环一直被执行，直至第一个线程调用unlock函数将owner设置为null，第二个线程才能进入临界区。  
 由于自旋锁只是将当前线程不停地执行循环体，不进行线程状态的改变，所以响应速度更快。但当线程数不停增加时，性能下降明显，因为每个线程都需要执行，占用CPU时间。  
-如果线程竞争不激烈，并且保持锁的时间段。适合使用自旋锁。  
+如果线程竞争不激烈，并且保持锁的时间段。适合使用自旋锁。 
+
+#### 自旋锁与互斥锁区别
+互斥锁：线程会从sleep（加锁）——> running（解锁），过程中有上下文的切换，cpu的抢占，信号的发送等开销；  
+自旋锁：线程一直是running（加锁 ——> 解锁），死循环检测锁的标志位。  
+
+### 原子类
+java.util.concurrent.atomic包：原子类的小工具包，支持在单个变量上解除锁的线程安全编程。  
+原子变量类相当于一种泛化的 volatile 变量，能够支持原子的和有条件的读-改-写操作。AtomicInteger 表示一个int类型的值，并提供了 get 和 set 方法，  
+这些volatile 类型的int变量在读取和写入上有着相同的内存语义。它还提供了一个原子的 compareAndSet 方法（如果该方法成功执行，那么将实现与读取／写入一个 volatile 变量相同的内存效果），  
+以及原子的添加、递增和递减等方法。AtomicInteger 表面上非常像一个扩展的 Counter 类，但在发生竞争的情况下能提供更高的可伸缩性，因为它直接利用了硬件对并发的支持。  
+ 
+#### 为什么会有原子类？
+CAS：Compare and Swap，即比较再交换。  
+jdk5增加了并发包java.util.concurrent.*，其下面的类使用CAS算法实现了区别于synchronouse同步锁的一种乐观锁。  
+JDK 5之前Java语言是靠synchronized关键字保证同步的，这是一种独占锁，也是是悲观锁。  
+
+#### 常用原子类
+Java中的原子操作类大致可以分为4类：原子更新基本类型、原子更新数组类型、原子更新引用类型、原子更新属性类型。  
+这些原子类中都是用了无锁的概念，有的地方直接使用CAS操作的线程安全的类型。如果同一个变量要被多个线程访问，则可以使用原子类：  
+- AtomicBoolean  
+- AtomicInteger  
+- AtomicLong  
+- AtomicReference  
+
+> 示例代码：concurrency05-lock.AtomicIntegerDemo.java  
+
+### CAS 无锁机制
+#### 什么是CAS？
+CAS：Compare and Swap，即比较再交换。
+jdk5增加了并发包java.util.concurrent.*，其下面的类使用CAS算法实现了区别于synchronized同步锁的一种乐观锁。  
+JDK 5之前Java语言是靠synchronized关键字保证同步的，这是一种独占锁，也是是悲观锁。  
+
+#### CAS算法理解
+1、与锁相比，使用比较交换（下文简称CAS）会使程序看起来更加复杂一些。但由于其非阻塞性，它对死锁问题天生免疫，并且，线程间的相互影响也远远比基于锁的方式要小。  
+更为重要的是，使用无锁的方式完全没有锁竞争带来的系统开销，也没有线程间频繁调度带来的开销，因此，它要比基于锁的方式拥有更优越的性能。  
+2、无锁的好处：
+- 在高并发的情况下，它比有锁的程序拥有更好的性能；
+- 它天生就对死锁免疫；
+
+3、CAS算法的过程是这样：它包含三个参数CAS(V,E,N): V表示要更新的变量，E表示预期值，N表示新值。  
+仅当V值等于E值时，才会将V的值设为N，如果V值和E值不同，则说明已经有其他线程做了更新，则当前线程什么都不做。最后，CAS返回当前V的真实值。  
+4、CAS操作是抱着乐观的态度进行的，它总是认为自己可以成功完成操作。当多个线程同时使用CAS操作一个变量时，只有一个会胜出，并成功更新，其余均会失败。  
+失败的线程不会被挂起，仅是被告知失败，并且允许再次尝试，当然也允许失败的线程放弃操作。基于这样的原理，CAS操作即使没有锁，也可以发现其他线程对当前线程的干扰，并进行恰当的处理。  
+5、简单地说，CAS需要你额外给出一个期望值，也就是你认为这个变量现在应该是什么样子的。如果变量不是你想象的那样，那说明它已经被别人修改过了。你就重新读取，再次尝试修改就好了。  
+6、在硬件层面，大部分的现代处理器都已经支持原子化的CAS指令。在JDK 5.0以后，虚拟机便可以使用这个指令来实现并发操作和并发数据结构，并且，这种操作在虚拟机中可以说是无处不在。  
+
+#### CAS（乐观锁算法）的基本假设前提
+CAS比较与交换的伪代码可以表示为：  
+```text
+do{   
+    备份旧数据;  
+    基于旧数据构造新数据;  
+}while(!CAS( 内存地址，备份的旧数据，新数据 ))  
+```
+
+![](images/CAS.png)
+
+上图的解释：CPU去更新一个值，但如果想改的值不再是原来的值，操作就失败，因为很明显，有其它操作先改变了这个值。
+
+就是指当两者进行比较时，如果相等，则证明共享数据没有被修改，替换成新值，然后继续往下运行；如果不相等，说明共享数据已经被修改，放弃已经所做的操作，然后重新执行刚才的操作。  
+容易看出 CAS 操作是基于共享数据不会被修改的假设，采用了类似于数据库的 commit-retry 的模式。当同步冲突出现的机会很少时，这种假设能带来较大的性能提升。  
+
+```java
+public final int getAndAddInt(Object o, long offset, int delta) {
+    int v;
+    do {
+        v = getIntVolatile(o, offset);
+    } while (!compareAndSwapInt(o, offset, v, v + delta));
+    return v;
+}
+```
+```java
+/** 
+ * Atomically increments by one the current value. 
+ * 
+ * @return the updated value 
+ */  
+public final int incrementAndGet() {  
+    for (;;) {  
+        // 获取当前值  
+        int current = get();  
+        // 设置期望值  
+        int next = current + 1;  
+        // 调用Native方法compareAndSet，执行CAS操作  
+        if (compareAndSet(current, next))  
+            // 成功后才会返回期望值，否则无线循环  
+            return next;  
+    }  
+}  
+```
+
+#### CAS缺点
+CAS存在一个很明显的问题，即ABA问题。  
+问题：如果变量V初次读取的时候是A，并且在准备赋值的时候检查到它仍然是A，那能说明它的值没有被其他线程修改过了吗？  
+如果在这段期间曾经被改成B，然后又改回A，那CAS操作就会误认为它从来没有被修改过。  
+针对这种情况，java并发包中提供了一个带有标记的原子引用类AtomicStampedReference，它可以通过控制变量值的版本来保证CAS的正确性。   
+
+### 公平锁与非公平锁
+#### 公平锁
+公平与非公平锁的队列都基于锁内部维护的一个双向链表，表结点Node的值就是每一个请求当前锁的线程。  
+公平锁则在于每次都是依次从队首取值。  
+锁的实现方式是基于如下几点：  
+表结点Node和状态state的volatile关键字。  
+sum.misc.Unsafe.compareAndSet的原子操作。  
+
+#### 非公平锁
+在等待锁的过程中，如果有任意新的线程妄图获取锁，都是有很大几率能够直接获取到锁的。  
+
+通俗的说，就是公平锁是先到先得，按序进行。非公平锁就是不排队，直接拿，失败再说。  
+
+### AQS
 
 ### 分布式锁
 如果想在不同的jvm中保证数据同步，使用分布式锁技术。有数据库实现、缓存实现、Zookeeper分布式锁。  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
- 
-
-
-
-
-
-
 
 
 
