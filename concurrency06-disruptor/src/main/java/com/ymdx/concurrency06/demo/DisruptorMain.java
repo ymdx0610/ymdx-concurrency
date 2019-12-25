@@ -50,7 +50,7 @@ public class DisruptorMain {
             byteBuffer.putLong(0, i);
             producer.onData(byteBuffer);
         }
-        //10.关闭disruptor和executor
+        // 10.关闭disruptor和executor
         disruptor.shutdown();
         executor.shutdown();
     }
