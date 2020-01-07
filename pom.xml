@@ -8,14 +8,6 @@
     <artifactId>ymdx-concurrency</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
-    <modules>
-        <module>concurrency01-thread-basis</module>
-        <module>concurrency02-jmm</module>
-        <module>concurrency03-thread-communication</module>
-        <module>concurrency04-thread-pool</module>
-        <module>concurrency05-lock</module>
-        <module>concurrency06-disruptor</module>
-    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,6 +23,15 @@
         <commons-lang3.version>3.9</commons-lang3.version>
         <junit.version>4.12</junit.version>
     </properties>
+
+    <modules>
+        <module>concurrency01-thread-basis</module>
+        <module>concurrency02-jmm</module>
+        <module>concurrency03-thread-communication</module>
+        <module>concurrency04-thread-pool</module>
+        <module>concurrency05-lock</module>
+        <module>concurrency06-disruptor</module>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
